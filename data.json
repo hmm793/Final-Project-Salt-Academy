@@ -1,0 +1,48 @@
+[
+  {
+    "first_name": "Mark",
+    "last_name": "Twain",
+    "gender": "Male",
+    "father_name": "Philip",
+    "mother_name": "Emilly",
+    "date_of_birth": "2021-12-15T13:11:35.436+00:00",
+    "father_occupation": "Enterpreneur",
+    "roll": "12131fff23",
+    "blood_group": "A-",
+    "religion": "Islam",
+    "email": "oscarsolideo@gmail.com",
+    "addmission_date": "2021-12-15T13:11:35.436+00:00",
+    "kelas": "1asfasd",
+    "section": "A",
+    "addmission_id": "121241234213",
+    "address": "Jl Juanda 1",
+    "phone": "298037489237423",
+    "short_bio": "w928339284ejkjjksd oi dfoidj ufiosdjfoi dfjoi sodjfdkfhskd fhjklsdf hjkdshksdhjfjksdhfkljsdhvfljkashdf aeihofeWPI UASDH LUWILSJFHSLJKAZSHDLJKAWDS FLAJKSDFHIJKWKDHFUOPIWE FHLUIKAWJE",
+    "image": "28937u48923urf",
+    "role": "user"
+  },
+
+  {
+    "first_name": "Mark",
+    "last_name": "Twain",
+    "gender": "Male",
+    "father_name": "Philip",
+    "mother_name": "Emilly",
+    "date_of_birth": "2021-12-15T13:11:35.436+00:00",
+    "father_occupation": "Enterpreneur",
+    "roll": "12131fff23",
+    "blood_group": "A-",
+    "religion": "Islam",
+    "email": "oscarsolideo@gmail.com",
+    "addmission_date": "2021-12-15T13:11:35.436+00:00",
+    "kelas": "1asfasd",
+    "section": "A",
+    "addmission_id": "121241234213",
+    "address": "Jl Juanda 1",
+    "phone": "298037489237423",
+    "password": "9283748927489",
+    "short_bio": "w928339284ejkjjksd oi dfoidj ufiosdjfoi dfjoi sodjfdkfhskd fhjklsdf hjkdshksdhjfjksdhfkljsdhvfljkashdf aeihofeWPI UASDH LUWILSJFHSLJKAZSHDLJKAWDS FLAJKSDFHIJKWKDHFUOPIWE FHLUIKAWJE",
+    "image": "28937u48923urf",
+    "role": "user"
+  }
+]
