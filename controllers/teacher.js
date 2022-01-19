@@ -307,6 +307,30 @@ class TeacherController {
         isSuccess = false;
       }
     });
+
+    const allStudent = await StudentModel.find().populate({
+      path: "kelas",
+      populate: [
+        {
+          path: "subject",
+          populate: {
+            path: "teacher_id",
+            select: ["first_name", "last_name", "email", "phone", "short_bio"],
+          },
+        },
+      ],
+    });
+
+    allStudent.forEach(async (el) => {
+      // el => data siswa satu2
+      let subjectList = el.subject; // array
+      let totalScore = 0;
+      subjectList.forEach((subj) => {
+        totalScore += parseInt(subj.score_subject);
+      });
+      await StudentModel.findByIdAndUpdate(el._id, { totalScore });
+    });
+
     if (isSuccess) {
       res.status(200).send({ pesan: "Berhasil Scorring" });
     } else {

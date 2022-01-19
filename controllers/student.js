@@ -341,6 +341,7 @@ class StudentController {
           path: "subject_name",
         },
       });
+
     if (!studentList) {
       return res.status(500).json({ success: false });
     }
@@ -374,21 +375,16 @@ class StudentController {
     res.send(user);
   }
 
-  // ??
+  // Student,??
   static async getStudentByID(req, res, next) {
     const { id } = req.params;
     try {
-      const student = await StudentModel.findById(id).populate({
-        path: "kelas",
-        populate: [
-          {
-            path: "teacher",
-            select: ["first_name", "last_name", "email", "phone", "short_bio"],
-          },
-          {
-            path: "subject",
-            populate: {
-              path: "teacher_id",
+      const student = await StudentModel.findById(id)
+        .populate({
+          path: "kelas",
+          populate: [
+            {
+              path: "teacher",
               select: [
                 "first_name",
                 "last_name",
@@ -397,9 +393,27 @@ class StudentController {
                 "short_bio",
               ],
             },
+            {
+              path: "subject",
+              populate: {
+                path: "teacher_id",
+                select: [
+                  "first_name",
+                  "last_name",
+                  "email",
+                  "phone",
+                  "short_bio",
+                ],
+              },
+            },
+          ],
+        })
+        .populate({
+          path: "subject",
+          populate: {
+            path: "subject_name",
           },
-        ],
-      });
+        });
       if (!student) {
         return res.status(500).json({ success: false });
       }

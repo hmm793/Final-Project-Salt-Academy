@@ -54,6 +54,9 @@ const studentSchema = mongoose.Schema({
       },
     },
   ],
+  totalScore: {
+    type: String,
+  },
 });
 
 studentSchema.virtual("id").get(function () {

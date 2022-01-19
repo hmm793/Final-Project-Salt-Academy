@@ -50,11 +50,7 @@ studentRoute.put(
 studentRoute.put("/status/:id", StudentController.editStatus);
 
 // Buat Student
-studentRoute.put(
-  "/bystudent/:id",
-  AuthJWT.authentication,
-  StudentController.editStudent
-);
+studentRoute.put("/bystudent/:id", StudentController.editStudent);
 
 // Buat Headmaster
 studentRoute.put(
