@@ -35,6 +35,8 @@ const uploadOptions = multer({ storage: storage });
 // Only By Headmaster
 studentRoute.post(
   "/register",
+  AuthJWT.authentication,
+  AuthJWT.authHeadmaster,
   uploadOptions.single("image"),
   StudentController.createNewStudent
 );
@@ -42,19 +44,32 @@ studentRoute.post(
 // Only By Student
 studentRoute.put(
   "/bystudent/image/:id",
+
   uploadOptions.single("image"),
   StudentController.editStudentImageByStudent
 );
 
 // Buat Headmaster
-studentRoute.put("/status/:id", StudentController.editStatus);
+studentRoute.put(
+  "/status/:id",
+  AuthJWT.authentication,
+  AuthJWT.authHeadmaster,
+  StudentController.editStatus
+);
 
 // Buat Student
-studentRoute.put("/bystudent/:id", StudentController.editStudent);
+studentRoute.put(
+  "/bystudent/:id",
+  AuthJWT.authentication,
+  AuthJWT.authStudent,
+  StudentController.editStudent
+);
 
 // Buat Headmaster
 studentRoute.put(
   "/byheadmaster/image/:id",
+  AuthJWT.authentication,
+  AuthJWT.authHeadmaster,
   uploadOptions.single("image"),
   StudentController.editStudentImageByHeadmaster
 );
@@ -62,25 +77,72 @@ studentRoute.put(
 // Buat Headmaster
 studentRoute.put(
   "/byheadmaster/:id",
+  AuthJWT.authentication,
+  AuthJWT.authHeadmaster,
   StudentController.editStudentByHeadmaster
 );
 
 // Buat Student
-studentRoute.get("/login", StudentController.studentLogin);
+studentRoute.post("/login", StudentController.studentLogin);
 
-studentRoute.get("/count", StudentController.studentCount);
-studentRoute.get("/totalMale", StudentController.getMaleStudent);
-studentRoute.get("/totalFemale", StudentController.getFemaleStudent);
+// Buat Headmaster
+studentRoute.get(
+  "/count",
+  AuthJWT.authentication,
+  AuthJWT.authHeadmaster,
+  StudentController.studentCount
+);
 
-studentRoute.get("/", StudentController.getAllStudentData);
-studentRoute.get("/:id", StudentController.getStudentByID);
+// Buat Headmaster
+studentRoute.get(
+  "/totalMale",
+  AuthJWT.authentication,
+  AuthJWT.authHeadmaster,
+  StudentController.getMaleStudent
+);
+
+// Buat Headmaster
+studentRoute.get(
+  "/totalFemale",
+  AuthJWT.authentication,
+  AuthJWT.authHeadmaster,
+  StudentController.getFemaleStudent
+);
+
+// HEadmaster
+// !student, !parent, !teacher
+studentRoute.get(
+  "/",
+  AuthJWT.authentication,
+  AuthJWT.authHeadmaster,
+  StudentController.getAllStudentData
+);
+
+// Buat Student, Parent, Headmaster
+// !Teacher
+studentRoute.get(
+  "/:id",
+  AuthJWT.authentication,
+  AuthJWT.authParentAndStudentAndHeadmaster,
+  StudentController.getStudentByID
+);
+
+// Buat Teacher
 studentRoute.get(
   "/getAllStudentRelatedToTheSubject/:id",
+  AuthJWT.authentication,
+  AuthJWT.authTeacher,
   StudentController.getAllStudentBySubject
 );
+
+// Buat Teacher && Headmaster
 studentRoute.get(
   "/getAllStudentRelatedToTheClass/:id",
+  AuthJWT.authentication,
+  AuthJWT.authTeacherAndHeadmaster,
   StudentController.getStudentsByClass
 );
+// Only By Student
+studentRoute.put("/reset-password", StudentController.resetPassword);
 
 module.exports = studentRoute;

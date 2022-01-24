@@ -1,8 +1,10 @@
 const express = require("express");
 const app = express();
-const studentRoute = require("./routes/main");
+const mainRoute = require("./routes/main");
 var cors = require("cors");
 const morgan = require("morgan");
+
+const errorHandler = require("./helper/error-handler");
 // Connect To DB
 require("./database/connectDB");
 
@@ -13,8 +15,8 @@ app.use("/public/uploads", express.static(__dirname + "/public/uploads"));
 
 app.use(cors());
 app.use(morgan("tiny"));
-
-app.use("/api", studentRoute);
+app.use("/api", mainRoute);
+app.use(errorHandler);
 
 // Handle Unspecific Route
 app.get("/", (req, res) => {

@@ -41,106 +41,123 @@ class StudentController {
       short_bio,
     } = req.body;
 
+    // Validasi Email
+    const userExist2 = await StudentModel.find();
+    const isEmailAlreadyExist = userExist2.filter((el) => {
+      if (el.email == email) {
+        return true;
+      }
+    });
+
     // Image Handler
     const fileName = req.file.filename;
     const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
 
     try {
-      const user_password = randomPassword();
-      const subjectForStudent = (
-        await classModel.findById(kelas).select("subject")
-      ).subject;
+      if (isEmailAlreadyExist.length !== 0) {
+        res
+          .status(404)
+          .json({ message: "Email Sudah Ada, Gunakan Email Lain" });
+      } else {
+        const user_password = randomPassword();
+        const subjectForStudent = (
+          await classModel.findById(kelas).select("subject")
+        ).subject;
 
-      const result = await StudentModel.create({
-        first_name,
-        last_name,
-        gender,
-        father_name,
-        mother_name,
-        date_of_birth,
-        father_occupation,
-        blood_group,
-        religion,
-        email,
-        addmission_date,
-        kelas,
-        address,
-        phone,
-        password: bcrypt.hashSync(user_password, 10),
-        short_bio,
-        image: `${basePath}${fileName}`,
-        role: "student",
-        year_academic,
-      });
+        const result = await StudentModel.create({
+          first_name,
+          last_name,
+          gender,
+          father_name,
+          mother_name,
+          date_of_birth,
+          father_occupation,
+          blood_group,
+          religion,
+          email,
+          addmission_date,
+          kelas,
+          address,
+          phone,
+          password: bcrypt.hashSync(user_password, 10),
+          short_bio,
+          image: `${basePath}${fileName}`,
+          role: "student",
+          year_academic,
+        });
 
-      subjectForStudent.forEach(async (element) => {
-        await StudentModel.findByIdAndUpdate(result.id, {
+        subjectForStudent.forEach(async (element) => {
+          await StudentModel.findByIdAndUpdate(result.id, {
+            $push: {
+              subject: { subject_name: element },
+            },
+          });
+        });
+
+        const newData1 = await StudentModel.findByIdAndUpdate(result.id, {
           $push: {
-            subject: { subject_name: element },
+            subject: { subject_name: subjectForStudent[0] },
           },
         });
-      });
 
-      const newData1 = await StudentModel.findByIdAndUpdate(result.id, {
-        $push: {
-          subject: { subject_name: subjectForStudent[0] },
-        },
-      });
-
-      if (!result && !newData1) {
-        return res.status(404).send("the student cannot be created");
-      }
-
-      const output = `
-      <p>Your account has been created by the admin</p>
-                  <h3>Account Details</h3>
-      <ul>
-
-        <li>Year Academic      : ${year_academic}</li>
-        <li>Name               : ${first_name} ${last_name}</li>
-        <li>Password           : ${user_password}</li>
-        <li>Role               : Student</li>
-        <li>Gender             : ${gender}</li>
-        <li>Father Name        : ${father_name}</li>
-        <li>Mother Name        : ${mother_name}</li>
-        <li>Date of Birth      : ${date_of_birth}</li>
-        <li>Father Occupation  : ${father_occupation}</li>
-        <li>Blood Group        : ${blood_group}</li>
-        <li>Religion           : ${religion}</li>
-        <li>Email              : ${email}</li>
-        <li>Addmission Date    : ${addmission_date}</li>
-        <li>Class              : ${kelas}</li>
-        <li>Address            : ${address}</li>
-        <li>Phone              : ${phone}</li>
-        <li>Image              : ${basePath}${fileName}</li>
-        <li>Short Bio          : ${short_bio}</li>
-      </ul>`;
-
-      let transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: "luarbiasaandika@gmail.com",
-          pass: "IndraMambuju2",
-        },
-      });
-
-      res.send(newData1);
-      transporter.sendMail(
-        {
-          from: '"Headmaster 👻" <luarbiasaandika@gmail.com>',
-          to: `${email}`,
-          subject: "Your Account Information✔",
-          text: "Hello world?",
-          html: output,
-        },
-        (err, info) => {
-          if (err) {
-            console.log(err);
-          }
-          console.log("Message sent: %s", info.messageId);
-          console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        if (!result && !newData1) {
+          return res
+            .status(404)
+            .send({ message: "the student cannot be created" });
         }
-      );
+
+        const output = `
+        <p>Your account has been created by the admin</p>
+                    <h3>Account Details</h3>
+        <ul>
+  
+          <li>Year Academic      : ${year_academic}</li>
+          <li>Name               : ${first_name} ${last_name}</li>
+          <li>Password           : ${user_password}</li>
+          <li>Role               : Student</li>
+          <li>Gender             : ${gender}</li>
+          <li>Father Name        : ${father_name}</li>
+          <li>Mother Name        : ${mother_name}</li>
+          <li>Date of Birth      : ${date_of_birth}</li>
+          <li>Father Occupation  : ${father_occupation}</li>
+          <li>Blood Group        : ${blood_group}</li>
+          <li>Religion           : ${religion}</li>
+          <li>Email              : ${email}</li>
+          <li>Addmission Date    : ${addmission_date}</li>
+          <li>Class              : ${kelas}</li>
+          <li>Address            : ${address}</li>
+          <li>Phone              : ${phone}</li>
+          <li>Image              : ${basePath}${fileName}</li>
+          <li>Short Bio          : ${short_bio}</li>
+        </ul>`;
+
+        let transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: "luarbiasaandika@gmail.com",
+            pass: "IndraMambuju2",
+          },
+        });
+
+        transporter.sendMail(
+          {
+            from: '"Headmaster 👻" <luarbiasaandika@gmail.com>',
+            to: `${email}`,
+            subject: "Your Account Information✔",
+            text: "Hello world?",
+            html: output,
+          },
+          (err, info) => {
+            if (err) {
+              console.log(err);
+            }
+            console.log("Message sent: %s", info.messageId);
+            console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+          }
+        );
+
+        res.status(200).send({ message: "Berhasil Buat Data Siswa" });
+      }
     } catch (error) {
       next(error);
     }
@@ -163,47 +180,53 @@ class StudentController {
       address,
       phone,
       short_bio,
-      password,
     } = req.body;
 
+    // Validasi Email
     const userExist = await StudentModel.findById(id);
-    let newPassword;
-    if (password) {
-      newPassword = bcrypt.hashSync(password, 10);
+    const oldEmail = userExist.email;
+    const newEmail = email;
+
+    const userExist2 = await StudentModel.find();
+    const isEmailAlreadyExist = userExist2.filter((el) => {
+      if (el.email == email) {
+        return true;
+      }
+    });
+
+    console.log("OLD : ", oldEmail);
+    console.log("NEW : ", newEmail);
+
+    if (oldEmail !== newEmail && isEmailAlreadyExist.length !== 0) {
+      res.status(200).json({ message: "Email Sudah Ada, Gunakan Email Lain" });
     } else {
-      newPassword = userExist.password;
+      const user = await StudentModel.findByIdAndUpdate(
+        id,
+        {
+          first_name,
+          last_name,
+          gender,
+          father_name,
+          mother_name,
+          date_of_birth,
+          father_occupation,
+          blood_group,
+          religion,
+          email,
+          address,
+          phone,
+          short_bio,
+        },
+        { new: true }
+      );
+
+      if (!user) {
+        return res
+          .status(404)
+          .send({ message: "the student data cannot be updated" });
+      }
+      res.status(200).json({ message: "Berhasil Ubah Data" });
     }
-
-    // // Image Handler
-    // const fileName = req.file.filename;
-    // const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
-
-    const user = await StudentModel.findByIdAndUpdate(
-      id,
-      {
-        first_name,
-        last_name,
-        gender,
-        father_name,
-        mother_name,
-        date_of_birth,
-        father_occupation,
-        blood_group,
-        religion,
-        email,
-        address,
-        phone,
-        short_bio,
-        password: newPassword,
-        // image: `${basePath}${fileName}`,
-      },
-      { new: true }
-    );
-
-    if (!user) {
-      return res.status(404).send("the student data cannot be updated");
-    }
-    res.send(user);
   }
 
   // Only By Student
@@ -222,9 +245,11 @@ class StudentController {
     );
 
     if (!user) {
-      return res.status(404).send("the student image cannot be updated");
+      return res
+        .status(404)
+        .send({ message: "the student image cannot be updated" });
     }
-    res.send(user);
+    res.status(200).json({ message: "Berhasil Ubah Gambar" });
   }
 
   // Only By Headmaster
@@ -282,9 +307,11 @@ class StudentController {
     );
 
     if (!user) {
-      return res.status(404).send("the student data cannot be updated");
+      return res
+        .status(404)
+        .send({ message: "the student data cannot be updated" });
     }
-    res.send(user);
+    res.status(200).send({ message: "Data updated successfully" });
   }
 
   // Only By Headmaster
@@ -305,9 +332,11 @@ class StudentController {
     );
 
     if (!user) {
-      return res.status(404).send("the student image cannot be updated");
+      return res
+        .status(404)
+        .send({ message: "the student image cannot be updated" });
     }
-    res.send(user);
+    res.status(200).send({ message: "Student image updated successfully" });
   }
 
   // ??
@@ -375,7 +404,72 @@ class StudentController {
     res.send(user);
   }
 
-  // Student,??
+  // Only By Headmaster
+  static async getFemaleStudent(req, res, next) {
+    try {
+      const totalFemaleStudent = await StudentModel.find({ gender: "Female" });
+      return res.send({ totalFemaleStudent: totalFemaleStudent.length });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Only By Headmaster
+  static async getMaleStudent(req, res, next) {
+    try {
+      const totalMaleStudent = await StudentModel.find({ gender: "Male" });
+      return res.send({ totalMaleStudent: totalMaleStudent.length });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Only By Teacher
+  static async getAllStudentBySubject(req, res, next) {
+    const { id } = req.params;
+    const idSubject = id;
+    const allStudent = await StudentModel.find({
+      "subject.subject_name": idSubject,
+    });
+
+    res.send(allStudent);
+  }
+
+  // Only By Student
+  static async studentLogin(req, res, next) {
+    try {
+      console.log("Ini di eksekusi");
+      console.log(JWT_SECRET);
+
+      const user = await StudentModel.findOne({ email: req.body.email });
+
+      if (!user) {
+        return res.status(400).send({ message: "The user not found" });
+      }
+
+      if (user && bcrypt.compareSync(req.body.password, user.password)) {
+        const token = jwt.sign(
+          {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+          },
+          JWT_SECRET,
+          {
+            expiresIn: "1d",
+          }
+        );
+
+        res.status(200).send({ user: user.email, token });
+      } else {
+        res.status(400).send({ message: "password is wrong!" });
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+  // Student, Parent, ??
+  // !Teacher
   static async getStudentByID(req, res, next) {
     const { id } = req.params;
     try {
@@ -423,71 +517,6 @@ class StudentController {
     }
   }
 
-  // Only By Headmaster
-  static async getFemaleStudent(req, res, next) {
-    try {
-      const totalFemaleStudent = await StudentModel.find({ gender: "Female" });
-      return res.send({ totalFemaleStudent: totalFemaleStudent.length });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  // Only By Headmaster
-  static async getMaleStudent(req, res, next) {
-    try {
-      const totalMaleStudent = await StudentModel.find({ gender: "Male" });
-      return res.send({ totalMaleStudent: totalMaleStudent.length });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  // Only By Teacher
-  static async getAllStudentBySubject(req, res, next) {
-    const { id } = req.params;
-    const idSubject = id;
-    const allStudent = await StudentModel.find({
-      "subject.subject_name": idSubject,
-    });
-
-    res.send(allStudent);
-  }
-
-  // Only By Student
-  static async studentLogin(req, res, next) {
-    try {
-      console.log("Ini di eksekusi");
-      console.log(JWT_SECRET);
-
-      const user = await StudentModel.findOne({ email: req.body.email });
-
-      if (!user) {
-        return res.status(400).send("The user not found");
-      }
-
-      if (user && bcrypt.compareSync(req.body.password, user.password)) {
-        const token = jwt.sign(
-          {
-            userId: user.id,
-            email: user.email,
-            role: user.role,
-          },
-          JWT_SECRET,
-          {
-            expiresIn: "1d",
-          }
-        );
-
-        res.status(200).send({ user: user.email, token });
-      } else {
-        res.status(400).send("password is wrong!");
-      }
-    } catch (error) {
-      next(error);
-    }
-  }
-
   // Only By Headmaster and Teacher
   static async getStudentsByClass(req, res, next) {
     const { id } = req.params;
@@ -526,6 +555,79 @@ class StudentController {
       });
 
     res.send(allStudent);
+  }
+
+  // By Student
+  static async resetPassword(req, res, next) {
+    const { email } = req.body;
+    // Random Password Handler
+    const randomPassword = () => {
+      var result = "";
+      var characters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      var charactersLength = characters.length;
+      for (var i = 0; i < 5; i++) {
+        result += characters.charAt(
+          Math.floor(Math.random() * charactersLength)
+        );
+      }
+      return result;
+    };
+
+    try {
+      const user_password = randomPassword();
+      const result = await StudentModel.findOneAndUpdate(
+        { email },
+        {
+          password: bcrypt.hashSync(user_password, 10),
+        }
+      );
+
+      if (!result) {
+        return res
+          .status(404)
+          .send({ message: "the student cannot be created" });
+      }
+
+      const output = `
+      <p>Your password has been reset</p>
+      <ul>
+      <li>Email: ${email}</li> 
+      <li>Password: ${user_password}</li>
+      </ul>
+      `;
+
+      let transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "luarbiasaandika@gmail.com",
+          pass: "IndraMambuju2",
+        },
+      });
+
+      transporter.sendMail(
+        {
+          from: '"Headmaster 👻" <luarbiasaandika@gmail.com>',
+          to: `${email}`,
+          subject: "Your Account Information✔",
+          text: "Hello world?",
+          html: output,
+        },
+        (err, info) => {
+          if (err) {
+            console.log(err);
+          }
+          console.log("Message sent: %s", info.messageId);
+          console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        }
+      );
+
+      res
+        .status(200)
+        .send({ message: "New password has been sent to your email" });
+    } catch (error) {
+      next(error);
+    }
   }
 }
 

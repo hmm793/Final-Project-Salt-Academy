@@ -1,6 +1,8 @@
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
-
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+const JWT_SECRET = process.env.JWT_SECRET || "";
 const TeacherModel = require("../models/teacher");
 const StudentModel = require("../models/student");
 class TeacherController {
@@ -23,7 +25,7 @@ class TeacherController {
     const {
       first_name,
       last_name,
-      gender,
+      gender, //
       date_of_birth,
       blood_group,
       religion,
@@ -34,34 +36,47 @@ class TeacherController {
       short_bio,
     } = req.body;
 
+    // Validasi Email
+    const userExist2 = await TeacherModel.find();
+    const isEmailAlreadyExist = userExist2.filter((el) => {
+      if (el.email == email) {
+        return true;
+      }
+    });
+
     // Image Handler
     const fileName = req.file.filename;
     const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
 
     try {
-      const user_password = randomPassword();
-      const result = await TeacherModel.create({
-        first_name,
-        last_name,
-        gender,
-        date_of_birth,
-        blood_group,
-        religion,
-        addmission_date,
-        email,
-        address,
-        phone,
-        short_bio,
-        role: "teacher",
-        password: bcrypt.hashSync(user_password, 10),
-        image: `${basePath}${fileName}`,
-      });
+      if (isEmailAlreadyExist.length !== 0) {
+        res
+          .status(404)
+          .json({ message: "Email Sudah Ada, Gunakan Email Lain" });
+      } else {
+        const user_password = randomPassword();
+        const result = await TeacherModel.create({
+          first_name,
+          last_name,
+          gender,
+          date_of_birth,
+          blood_group,
+          religion,
+          addmission_date,
+          email,
+          address,
+          phone,
+          short_bio,
+          role: "teacher",
+          password: bcrypt.hashSync(user_password, 10),
+          image: `${basePath}${fileName}`,
+        });
 
-      if (!result) {
-        return res.status(404).send("the teacher cannot be created");
-      }
+        if (!result) {
+          return res.status(404).send("the teacher cannot be created");
+        }
 
-      const output = `
+        const output = `
       <p>Your account has been created by the admin</p>
       <h3>Account Details</h3>
       <ul>
@@ -82,32 +97,33 @@ class TeacherController {
       
       `;
 
-      let transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: "luarbiasaandika@gmail.com",
-          pass: "IndraMambuju2",
-        },
-      });
+        let transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: "luarbiasaandika@gmail.com",
+            pass: "IndraMambuju2",
+          },
+        });
 
-      transporter.sendMail(
-        {
-          from: '"Headmaster 👻" <luarbiasaandika@gmail.com>',
-          to: `${email}`,
-          subject: "Your Account Information✔",
-          text: "Hello world?",
-          html: output,
-        },
-        (err, info) => {
-          if (err) {
-            console.log(err);
+        transporter.sendMail(
+          {
+            from: '"Headmaster 👻" <luarbiasaandika@gmail.com>',
+            to: `${email}`,
+            subject: "Your Account Information✔",
+            text: "Hello world?",
+            html: output,
+          },
+          (err, info) => {
+            if (err) {
+              console.log(err);
+            }
+            console.log("Message sent: %s", info.messageId);
+            console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
           }
-          console.log("Message sent: %s", info.messageId);
-          console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-        }
-      );
+        );
 
-      res.send(result);
+        res.status(200).send({ message: "Berhasil Buat Data Guru" });
+      }
     } catch (error) {
       next(error);
     }
@@ -115,8 +131,7 @@ class TeacherController {
 
   // Only By Teacher
   static async updateTeacherByTeacher(req, res, next) {
-    console.log("DATA TEACHER : ", req.body);
-    const userExist = await TeacherModel.findById(req.params.id);
+    const { id } = req.params;
     const {
       first_name,
       last_name,
@@ -128,43 +143,46 @@ class TeacherController {
       address,
       phone,
       short_bio,
-      password,
     } = req.body;
 
-    let newPassword;
-    if (password) {
-      newPassword = bcrypt.hashSync(password, 10);
+    // Validasi Email
+    const userExist = await TeacherModel.findById(id);
+    const oldEmail = userExist.email;
+    const newEmail = email;
+
+    const userExist2 = await TeacherModel.find();
+    const isEmailAlreadyExist = userExist2.filter((el) => {
+      if (el.email == email) {
+        return true;
+      }
+    });
+    if (oldEmail !== newEmail && isEmailAlreadyExist.length !== 0) {
+      res.status(200).json({ message: "Email Sudah Ada, Gunakan Email Lain" });
     } else {
-      newPassword = userExist.password;
+      const user = await TeacherModel.findByIdAndUpdate(
+        id,
+        {
+          first_name,
+          last_name,
+          gender,
+          date_of_birth,
+          blood_group,
+          religion,
+          email,
+          address,
+          phone,
+          short_bio,
+        },
+        { new: true }
+      );
+
+      if (!user) {
+        return res
+          .status(404)
+          .send({ message: "the teacher data cannot be updated" });
+      }
+      res.status(200).json({ message: "Berhasil Ubah Data" });
     }
-
-    // // Image Handler
-    // const fileName = req.file.filename;
-    // const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
-
-    const user = await TeacherModel.findByIdAndUpdate(
-      req.params.id,
-      {
-        first_name,
-        last_name,
-        gender,
-        date_of_birth,
-        blood_group,
-        religion,
-        email,
-        address,
-        phone,
-        short_bio,
-        password: newPassword,
-        // image: `${basePath}${fileName}`,
-      },
-      { new: true }
-    );
-
-    if (!user) {
-      return res.status(404).send("the teacher data cannot be updated");
-    }
-    res.send(user);
   }
   // Only By Teacher
   static async editTeacherImageByTeacher(req, res, next) {
@@ -182,9 +200,11 @@ class TeacherController {
     );
 
     if (!user) {
-      return res.status(404).send("the teacher image cannot be updated");
+      return res
+        .status(404)
+        .send({ message: "the teacher image cannot be updated" });
     }
-    res.send(user);
+    res.status(200).json({ message: "Berhasil Ubah Gambar" });
   }
 
   // Only By Headmaster
@@ -277,7 +297,7 @@ class TeacherController {
     res.send({ totalTeacher });
   }
 
-  // ??
+  // By Headmaster and Teacher
   static async getTeacherByID(req, res, next) {
     const { id } = req.params;
     const teacher = await TeacherModel.findById(id)
@@ -335,6 +355,109 @@ class TeacherController {
       res.status(200).send({ pesan: "Berhasil Scorring" });
     } else {
       res.status(404).send({ error: "Gagal Input Nilai" });
+    }
+  }
+
+  // Only By Teacher
+  static async teacherLogin(req, res, next) {
+    try {
+      const user = await TeacherModel.findOne({ email: req.body.email });
+      if (!user) {
+        return res.status(400).send({ message: "The user not found" });
+      }
+
+      if (user && bcrypt.compareSync(req.body.password, user.password)) {
+        const token = jwt.sign(
+          {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+          },
+          JWT_SECRET,
+          {
+            expiresIn: "1d",
+          }
+        );
+
+        res.status(200).send({ user: user.email, token });
+      } else {
+        res.status(400).send({ message: "password is wrong!" });
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Only By Teacher
+  static async resetPassword(req, res, next) {
+    const { email } = req.body;
+    // Random Password Handler
+    const randomPassword = () => {
+      var result = "";
+      var characters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      var charactersLength = characters.length;
+      for (var i = 0; i < 5; i++) {
+        result += characters.charAt(
+          Math.floor(Math.random() * charactersLength)
+        );
+      }
+      return result;
+    };
+
+    try {
+      const user_password = randomPassword();
+      const result = await TeacherModel.findOneAndUpdate(
+        { email },
+        {
+          password: bcrypt.hashSync(user_password, 10),
+        }
+      );
+
+      if (!result) {
+        return res
+          .status(404)
+          .send({ message: "the teacher cannot be created" });
+      }
+
+      const output = `
+      <p>Your password has been reset</p>
+      <ul>
+      <li>Email: ${email}</li> 
+      <li>Password: ${user_password}</li>
+      </ul>
+      `;
+
+      let transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "luarbiasaandika@gmail.com",
+          pass: "IndraMambuju2",
+        },
+      });
+
+      transporter.sendMail(
+        {
+          from: '"Headmaster 👻" <luarbiasaandika@gmail.com>',
+          to: `${email}`,
+          subject: "Your Account Information✔",
+          text: "Hello world?",
+          html: output,
+        },
+        (err, info) => {
+          if (err) {
+            console.log(err);
+          }
+          console.log("Message sent: %s", info.messageId);
+          console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        }
+      );
+
+      res
+        .status(200)
+        .send({ message: "New password has been sent to your email" });
+    } catch (error) {
+      next(error);
     }
   }
 }

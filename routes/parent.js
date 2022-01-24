@@ -4,6 +4,9 @@ const multer = require("multer");
 const parentRoute = express.Router();
 const ParentController = require("./../controllers/parent");
 
+// Auth Autho
+const AuthJWT = require("../helper/authJWT");
+
 // Image Input
 const FILE_TYPE_MAP = {
   "image/png": "png",
@@ -28,39 +31,83 @@ const storage = multer.diskStorage({
 });
 
 const uploadOptions = multer({ storage: storage });
-
+// Headmaster
 parentRoute.post(
   "/register",
+  AuthJWT.authentication,
+  AuthJWT.authHeadmaster,
   uploadOptions.single("image"),
   ParentController.createNewParent
 );
 
 // Buat Parent
-parentRoute.put("/byparent/:id", ParentController.editByParent);
+parentRoute.put(
+  "/byparent/:id",
+  AuthJWT.authentication,
+  AuthJWT.authParentAndHeadmaster,
+  ParentController.editByParent
+);
 
 // Buat Headmaster
-parentRoute.put("/status/:id", ParentController.editStatus);
+parentRoute.put(
+  "/status/:id",
+  AuthJWT.authentication,
+  AuthJWT.authHeadmaster,
+  ParentController.editStatus
+);
 
 // Buat Parent
 parentRoute.put(
   "/byparent/image/:id",
+  AuthJWT.authentication,
+  AuthJWT.authParentAndHeadmaster,
   uploadOptions.single("image"),
   ParentController.editParentImageByParent
 );
 
 // Headmaster
-parentRoute.put("/byheadmaster/:id", ParentController.editByHeadmaster);
+parentRoute.put(
+  "/byheadmaster/:id",
+  AuthJWT.authentication,
+  AuthJWT.authHeadmaster,
+  ParentController.editByHeadmaster
+);
 
 // Headmaster
 parentRoute.put(
   "/byheadmaster/image/:id",
+  AuthJWT.authentication,
+  AuthJWT.authHeadmaster,
   ParentController.editParentImageByHeadMaster
 );
 
 // By Headmaster
-parentRoute.get("/count", ParentController.parentCount);
+parentRoute.get(
+  "/count",
+  AuthJWT.authentication,
+  AuthJWT.authHeadmaster,
+  ParentController.parentCount
+);
 
-parentRoute.get("/", ParentController.getAllParentData);
-parentRoute.get("/:id", ParentController.getParentByID);
+// By Headmaster
+parentRoute.get(
+  "/",
+  AuthJWT.authentication,
+  AuthJWT.authHeadmaster,
+  ParentController.getAllParentData
+);
+
+// Parent dan Headmaster
+parentRoute.get(
+  "/:id",
+  AuthJWT.authentication,
+  AuthJWT.authParentAndHeadmaster,
+  ParentController.getParentByID
+);
+
+// Only By Parent
+parentRoute.post("/login", ParentController.parentLogin);
+// Only By Parent
+parentRoute.put("/reset-password", ParentController.resetPassword);
 
 module.exports = parentRoute;

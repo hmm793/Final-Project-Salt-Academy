@@ -1,5 +1,7 @@
 const bcrypt = require("bcrypt");
-
+require("dotenv").config();
+const JWT_SECRET = process.env.JWT_SECRET || "";
+const jwt = require("jsonwebtoken");
 const HeadmasterModel = require("../models/headmaster");
 class HeadmasterController {
   static async createNewHeadmaster(req, res, next) {
@@ -47,6 +49,35 @@ class HeadmasterController {
       }
 
       res.send(result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Only By Headmaster
+  static async headmasterLogin(req, res, next) {
+    console.log("YES");
+    try {
+      const user = await HeadmasterModel.findOne({ email: req.body.email });
+      if (!user) {
+        return res.status(400).send({ message: "The user not found" });
+      }
+      if (user && bcrypt.compareSync(req.body.password, user.password)) {
+        const token = jwt.sign(
+          {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+          },
+          JWT_SECRET,
+          {
+            expiresIn: "1d",
+          }
+        );
+        res.status(200).send({ user: user.email, token });
+      } else {
+        res.status(400).send({ message: "password is wrong!" });
+      }
     } catch (error) {
       next(error);
     }

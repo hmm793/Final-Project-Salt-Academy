@@ -7,7 +7,6 @@ const subjectSchema = mongoose.Schema({
   teacher_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Teacher",
-    default: "",
   },
   duration: {
     type: String,
