@@ -34,5 +34,6 @@ headmasterRoute.post(
   uploadOptions.single("image"),
   HeadmasterController.createNewHeadmaster
 );
+headmasterRoute.post("/login", HeadmasterController.headmasterLogin);
 
 module.exports = headmasterRoute;

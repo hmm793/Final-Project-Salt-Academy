@@ -1,37 +1,33 @@
 const mongoose = require("mongoose");
 
 const studentSchema = mongoose.Schema({
-  first_name: { type: String, required: true },
-  last_name: { type: String, required: true },
+  first_name: { type: String },
+  last_name: { type: String },
   gender: {
     type: String,
     enum: ["Male", "Female", "Others"],
-    required: true,
   },
   father_name: { type: String },
   mother_name: { type: String },
-  date_of_birth: { type: Date, required: true },
+  date_of_birth: { type: Date },
   father_occupation: { type: String },
-  roll: { type: String, unique: true },
   blood_group: {
     type: String,
-    enum: ["A-", "B+", "B-", "O+", "O-"],
-    required: true,
+    enum: ["A-", "A+", "B+", "B-", "O+", "O-", "AB-", "AB+"],
   },
   religion: {
     type: String,
     enum: ["Islam", "Hindu", "Christian", "Buddish", "Others"],
-    required: true,
   },
-  email: { type: String, unique: true },
+  email: { type: String },
+  year_academic: {
+    type: String,
+  },
   addmission_date: { type: Date },
   kelas: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Class",
-    required: true,
   },
-  section: { type: String, required: true },
-  addmission_id: { type: String },
   address: { type: String },
   phone: { type: String },
   password: { type: String },
@@ -40,12 +36,26 @@ const studentSchema = mongoose.Schema({
   role: {
     type: String,
     enum: ["student", "headmaster", "teacher", "parent"],
-    required: true,
   },
   status: {
     type: String,
-    enum: ["active", "non-active", "teacher", "parent"],
+    enum: ["active", "non-active"],
     default: "active",
+  },
+  subject: [
+    {
+      subject_name: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Subject",
+      },
+      score_subject: {
+        type: String,
+        default: "",
+      },
+    },
+  ],
+  totalScore: {
+    type: String,
   },
 });
 

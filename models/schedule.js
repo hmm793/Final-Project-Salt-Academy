@@ -1,28 +1,42 @@
 const mongoose = require("mongoose");
 
 const scheduleSchema = mongoose.Schema({
-  subject_name: {
-    type: String,
-    required: true,
-  },
-  teacher_id: {
+  kelas: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Teacher",
-    required: true,
-    default: "",
+    ref: "Class",
   },
-  duration: {
+  title: {
     type: String,
+  },
+  daysOfWeek: {
+    type: Array,
+  },
+  start: {
+    type: Date,
+  },
+  startTime: {
+    type: String,
+  },
+  endTime: {
+    type: String,
+  },
+  end: {
+    type: Date,
+  },
+  color: {
+    type: String,
+    default: "3238a8",
+  },
+  allDay: {
+    type: Boolean,
     required: true,
   },
 });
-
-subjectSchema.virtual("id").get(function () {
+scheduleSchema.virtual("id").get(function () {
   return this._id.toHexString();
 });
-subjectSchema.set("toJSON", {
+scheduleSchema.set("toJSON", {
   virtuals: true,
 });
-
-const subjectModel = mongoose.model("Subject", scheduleSchema);
-module.exports = subjectModel;
+const scheduleModel = mongoose.model("Schedule", scheduleSchema);
+module.exports = scheduleModel;

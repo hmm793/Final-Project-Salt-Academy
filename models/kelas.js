@@ -19,5 +19,12 @@ const classSchema = mongoose.Schema({
   ],
 });
 
+classSchema.virtual("id").get(function () {
+  return this._id.toHexString();
+});
+
+classSchema.set("toJSON", {
+  virtuals: true,
+});
 const classModel = mongoose.model("Class", classSchema);
 module.exports = classModel;

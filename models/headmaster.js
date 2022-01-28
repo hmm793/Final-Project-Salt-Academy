@@ -11,7 +11,7 @@ const headmasterSchema = mongoose.Schema({
   date_of_birth: { type: Date, required: true },
   blood_group: {
     type: String,
-    enum: ["A-", "B+", "B-", "O+", "O-"],
+    enum: ["A-", "A+", "B+", "B-", "O+", "O-", "AB-", "AB+"],
     required: true,
   },
   religion: {
